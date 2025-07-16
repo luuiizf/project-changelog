@@ -10,9 +10,9 @@ export default {
 </script>
 
 <template>
-  <div id="app">
+  <div id="app" >
     <link type="text/css" rel="stylesheet" href="https://fluighml.rn.sebrae.com.br/style-guide/css/fluig-style-guide.min.css"/>
-    <div class="fluig-style-guide">
+    <div>
       <ChangelogWidget />
     </div>
   </div>

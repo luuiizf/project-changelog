@@ -33,7 +33,7 @@
       <!-- Main Content -->
       <div v-if="!loading && !error" class="space-y-10">
         <!-- Header Section -->
-        <div class="text-center mb-12">
+        <div class="text-center">
           <h1 class="text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
             Histórico de Alterações
           </h1>
@@ -44,7 +44,7 @@
 
         <!-- Version Cards -->
         <div v-for="version in groupedVersions" :key="version.versionNumber"
-             class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
+             class="bg-white mb-8 rounded-3xl shadow-xl overflow-hidden border border-slate-200 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
 
           <!-- Version Header -->
           <div class="bg-gradient-to-r from-slate-800 to-slate-900 px-8 py-6">
@@ -125,6 +125,9 @@
 <script>
 import { mockChangelogData } from '../mock.js';
 import { getChangelogs } from '../services/fluigService.js';
+import options from '../services/options.json';
+
+const baseUrl = "https://fluighml.rn.sebrae.com.br"
 
 export default {
   name: 'ChangelogWidget',
@@ -172,8 +175,9 @@ export default {
       this.rawValues = mockChangelogData.values;
       this.loading = false;
     }, 500);
-    
-    getChangelogs()
+
+    getChangelogs(baseUrl, options)
+    console.log(getChangelogs(baseUrl, options))
       .then(data => {
         this.rawValues = data;
       })
