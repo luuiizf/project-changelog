@@ -13,11 +13,10 @@ var Changelog = {
      */
     setupView: function() {
         FLUIGC.calendar('#dataLancamento');
-        
-        // Inicializa o editor de texto Quill na primeira linha que já existe na página
-        const firstEditor = document.querySelector('.quill-editor-container');
-        if (firstEditor) {
-            this.initQuillEditor(firstEditor);
+        // Inicializa o editor de texto Quill no campo principal
+        const mainEditor = document.querySelector('.quill-editor-container');
+        if (mainEditor) {
+            this.initQuillEditor(mainEditor);
         }
     },
 
@@ -32,19 +31,46 @@ var Changelog = {
     },
 
     /**
-     * Lida com a adição de uma nova linha na tabela Pai-Filho.
+     * Lida com a adição de uma nova linha na tabela com os dados preenchidos.
      */
     addChild: function() {
-        // Adiciona uma nova linha e retorna o índice dela
-        const newIndex = wdkAddChild('tableChanges');
-        
-        // Encontra o elemento do editor Quill na nova linha (que é a última da tabela)
-        const newEditorElement = $('table[tablename="tableChanges"] tbody tr:last .quill-editor-container')[0];
+        // Pega os valores dos campos
+        var tipo = $('#tipoChangelog').val();
+        var titulo = $('#titulo').val();
+        var descricao = '';
+        if (this.mainQuill) {
+            descricao = this.mainQuill.root.innerHTML;
+        } else {
+            descricao = $('#descricao').val();
+        }
+        // Para o upload, pega o nome do arquivo selecionado
+        var imagem = '-';
+        var uploadInput = $("#imagemAlteracao")[0];
+        if (uploadInput && uploadInput.files && uploadInput.files.length > 0) {
+            imagem = uploadInput.files[0].name;
+        }
 
-        // Limpa o conteúdo clonado antes de inicializar um novo editor
-        if (newEditorElement) {
-            $(newEditorElement).empty();
-            this.initQuillEditor(newEditorElement);
+        // Adiciona a nova linha na tabela
+        var $tbody = $("table[tablename='tableChanges'] tbody");
+        var newRow = '<tr>' +
+            '<td>' + (tipo ? tipo : '-') + '</td>' +
+            '<td>' + (titulo ? titulo : '-') + '</td>' +
+            '<td>' + descricao + '</td>' +
+            '<td>' + imagem + '</td>' +
+            '<td><button type="button" class="btn btn-danger btn-xs btn-remove"><i class="fluigicon fluigicon-trash"></i></button></td>' +
+            '</tr>';
+        $tbody.append(newRow);
+
+        // Limpa os campos para novo preenchimento
+        $('#tipoChangelog').val('');
+        $('#titulo').val('');
+        if (this.mainQuill) {
+            this.mainQuill.setContents([]); // Limpa o editor Quill
+        } else {
+            $('#descricao').val('');
+        }
+        if (uploadInput) {
+            uploadInput.value = '';
         }
     },
 
@@ -54,7 +80,7 @@ var Changelog = {
      */
     initQuillEditor: function(element) {
         if (element && !element.quill) {
-            const quill = new Quill(element, {
+            var quill = new Quill(element, {
                 theme: 'snow',
                 modules: {
                     toolbar: [
@@ -66,11 +92,10 @@ var Changelog = {
                 },
                 placeholder: 'Descreva a alteração detalhadamente...'
             });
-
-            // Encontra o input oculto correspondente para salvar o HTML do editor
-            const hiddenInput = $(element).parent().find('.quill-hidden-input');
+            this.mainQuill = quill;
+            // Atualiza o valor do input oculto sempre que o texto do editor mudar
+            var hiddenInput = $(element).parent().find('.quill-hidden-input');
             if (hiddenInput.length > 0) {
-                // Atualiza o valor do input oculto sempre que o texto do editor mudar
                 quill.on('text-change', function() {
                     hiddenInput.val(quill.root.innerHTML);
                 });
@@ -81,10 +106,10 @@ var Changelog = {
 
 /**
  * Função de exclusão customizada.
- * Precisa ficar no escopo global (window) para ser acessível pelo 'onclick' do HTML gerado pelo Fluig.
- * @param {HTMLElement} oElement O ícone de lixeira que foi clicado.
+ * Agora remove a linha da tabela ao clicar no botão de remover.
  */
-function myCustomDelete(oElement) {
+$(document).on('click', '.btn-remove', function() {
+    var $tr = $(this).closest('tr');
     FLUIGC.message.confirm({
         message: 'Você tem certeza que deseja remover esta alteração?',
         title: 'Confirmar Exclusão',
@@ -92,12 +117,10 @@ function myCustomDelete(oElement) {
         labelNo: 'Cancelar'
     }, function(result, data) {
         if (result) {
-            // Remove a linha do formulário
-            fnWdkRemoveChild(oElement);
+            $tr.remove();
         }
     });
-}
-
+});
 
 // Inicia o script quando o documento HTML estiver totalmente carregado
 $(function() {
