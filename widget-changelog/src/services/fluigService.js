@@ -1,11 +1,25 @@
-export async function getChangelogs(baseUrl, options) {
+export async function getChangelogs(baseUrl) {
   try {
-    const url = `${baseUrl}/fluighub/rest/service/execute/datasearch`;
+    const url = `${baseUrl}/fluighub2/rest/service/execute/datasearch`;
+    const filtros =
+      `datasetId=dschangelogLuiz` +
+      `&field=numeroVersao` +
+      `&field=dataLancamento` +
+      `&constraintsField=tablename` +
+      `&constraintsInitialValue=tableChanges` +
+      `&constraintsFinalValue=tableChanges`
+
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(options)
+      body: JSON.stringify({
+        endpoint: 'dataset',
+        method: 'get',
+        params: filtros
+      })
     });
+
+
     const res = await response.json();
 
     if (response.status !== 200) {
@@ -16,9 +30,12 @@ export async function getChangelogs(baseUrl, options) {
       throw new Error('Erro ao buscar dados do changelog');
     }
 
+    if (!res.message) throw new Error('Resposta da API não contém "message"');
     let resMessage = JSON.parse(res.message);
-    resMessage = JSON.parse(resMessage.values[0].values);
-    return resMessage;
+    if (!resMessage.values) {
+      throw new Error('Estrutura inesperada em resMessage');
+    }
+    return resMessage.values;
   } catch (err) {
     console.error('Falha ao buscar dados do changelog:', err);
     throw err;

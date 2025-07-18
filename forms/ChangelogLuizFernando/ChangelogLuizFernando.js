@@ -1,128 +1,127 @@
-// Objeto principal para organizar as funções do formulário
-var Changelog = {
-    /**
-     * Ponto de entrada do script. É chamado quando o documento está pronto.
-     */
-    init: function() {
-        this.setupListeners();
+$(document).ready(function () {
+    Changelog.init();
+});
+
+const Changelog = {
+    tabelaFilha: "tableChanges",
+    mainQuill: null,
+
+    init() {
         this.setupView();
+        this.setupListeners();
     },
 
-    /**
-     * Configura a visualização inicial do formulário.
-     */
-    setupView: function() {
+    setupView() {
+        // Inicializa o calendário Fluig
         FLUIGC.calendar('#dataLancamento');
-        // Inicializa o editor de texto Quill no campo principal
-        const mainEditor = document.querySelector('.quill-editor-container');
-        if (mainEditor) {
-            this.initQuillEditor(mainEditor);
+
+        // Inicializa o Quill
+        const editorContainer = document.querySelector('.quill-editor-container');
+        if (editorContainer) {
+            this.initQuillEditor(editorContainer);
         }
     },
 
-    /**
-     * Centraliza a criação de todos os "ouvintes" de eventos (cliques, mudanças, etc).
-     */
-    setupListeners: function() {
-        // Evento de clique para o botão "Adicionar Alteração"
-        $('#addChangeBtn').on('click', function() {
-            Changelog.addChild();
+    setupListeners() {
+        $('#addChangeBtn').on('click', () => this.adicionarLinha());
+
+        $(document).on('click', '.btn-remove', function () {
+            const $linha = $(this).closest('tr');
+            FLUIGC.message.confirm({
+                message: 'Você tem certeza que deseja remover esta alteração?',
+                title: 'Confirmar Exclusão',
+                labelYes: 'Sim, remover',
+                labelNo: 'Cancelar'
+            }, function (confirmado) {
+                if (confirmado) fnWdkRemoveChild($linha);
+            });
         });
     },
 
-    /**
-     * Lida com a adição de uma nova linha na tabela com os dados preenchidos.
-     */
-    addChild: function() {
-        // Pega os valores dos campos
-        var tipo = $('#tipoChangelog').val();
-        var titulo = $('#titulo').val();
-        var descricao = '';
-        if (this.mainQuill) {
-            descricao = this.mainQuill.root.innerHTML;
-        } else {
-            descricao = $('#descricao').val();
-        }
-        // Para o upload, pega o nome do arquivo selecionado
-        var imagem = '-';
-        var uploadInput = $("#imagemAlteracao")[0];
-        if (uploadInput && uploadInput.files && uploadInput.files.length > 0) {
-            imagem = uploadInput.files[0].name;
+    async adicionarLinha() {
+        const tipo = $('#tipoChangelog').val();
+        const titulo = $('#titulo').val();
+        const descricao = this.mainQuill ? this.mainQuill.root.innerHTML : '';
+        const inputFile = $('#imagemAlteracao')[0];
+
+        if (!tipo || !titulo || !descricao || !inputFile || !inputFile.files.length) {
+            FLUIGC.toast({ title: 'Atenção: ', message: 'Preencha todos os campos e selecione uma imagem.', type: 'warning' });
+            return;
         }
 
-        // Adiciona a nova linha na tabela
-        var $tbody = $("table[tablename='tableChanges'] tbody");
-        var newRow = '<tr>' +
-            '<td>' + (tipo ? tipo : '-') + '</td>' +
-            '<td>' + (titulo ? titulo : '-') + '</td>' +
-            '<td>' + descricao + '</td>' +
-            '<td>' + imagem + '</td>' +
-            '<td><button type="button" class="btn btn-danger btn-xs btn-remove"><i class="fluigicon fluigicon-trash"></i></button></td>' +
-            '</tr>';
-        $tbody.append(newRow);
+        const file = inputFile.files[0];
+        const fileName = file.name;
+        const idPasta = 158963; // ID da pasta onde a imagem será salva
 
-        // Limpa os campos para novo preenchimento
-        $('#tipoChangelog').val('');
-        $('#titulo').val('');
-        if (this.mainQuill) {
-            this.mainQuill.setContents([]); // Limpa o editor Quill
-        } else {
-            $('#descricao').val('');
+        const docId = await this.salvarImagem(file, fileName, idPasta);
+        if (!docId) {
+            FLUIGC.toast({ title: 'Erro: ', message: 'Não foi possível salvar a imagem.', type: 'danger' });
+            return;
         }
-        if (uploadInput) {
-            uploadInput.value = '';
-        }
+
+        // Adiciona linha na tabela dinâmica
+        const linha = wdkAddChild(this.tabelaFilha);
+
+        $(`#tipoFilho___${linha}`).val(tipo);
+        $(`#tituloFilho___${linha}`).val(titulo);
+        $(`#descricaoFilho___${linha}`).val(descricao);
+        $(`#imagemFilho___${linha}`).val(fileName);
+
+        this.limparCampos();
     },
 
-    /**
-     * Inicializa uma instância do editor de texto Quill em um elemento específico.
-     * @param {HTMLElement} element O elemento <div> onde o editor será renderizado.
-     */
-    initQuillEditor: function(element) {
-        if (element && !element.quill) {
-            var quill = new Quill(element, {
-                theme: 'snow',
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'align': [] }],
-                        ['link']
-                    ]
-                },
-                placeholder: 'Descreva a alteração detalhadamente...'
+    limparCampos() {
+        $('#tipoChangelog').val('');
+        $('#titulo').val('');
+        if (this.mainQuill) this.mainQuill.setContents([]);
+        $('#imagemAlteracao').val('');
+    },
+
+    initQuillEditor(container) {
+        const quill = new Quill(container, {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    [{ align: [] }],
+                    ['link']
+                ]
+            },
+            placeholder: 'Descreva a alteração detalhadamente...'
+        });
+
+        this.mainQuill = quill;
+
+        quill.on('text-change', () => {
+            $('#descricao').val(quill.root.innerHTML);
+        });
+    },
+
+    async salvarImagem(file, fileName, folderId) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('pathId', folderId);
+        formData.append('nameFile', fileName);
+
+        try {
+            const baseUrl = 'https://fluighml.rn.sebrae.com.br';
+            const url = `${baseUrl}/fluighub/rest/service/execute/uploadfile`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
             });
-            this.mainQuill = quill;
-            // Atualiza o valor do input oculto sempre que o texto do editor mudar
-            var hiddenInput = $(element).parent().find('.quill-hidden-input');
-            if (hiddenInput.length > 0) {
-                quill.on('text-change', function() {
-                    hiddenInput.val(quill.root.innerHTML);
-                });
+
+            const res = await response.json();
+            if (res.code !== 200) {
+                throw new Error('Erro ao enviar o arquivo');
             }
+
+            return JSON.parse(res.message).documentId;
+        } catch (err) {
+            console.error('Erro no upload:', err);
+            return false;
         }
     }
 };
-
-/**
- * Função de exclusão customizada.
- * Agora remove a linha da tabela ao clicar no botão de remover.
- */
-$(document).on('click', '.btn-remove', function() {
-    var $tr = $(this).closest('tr');
-    FLUIGC.message.confirm({
-        message: 'Você tem certeza que deseja remover esta alteração?',
-        title: 'Confirmar Exclusão',
-        labelYes: 'Sim, remover',
-        labelNo: 'Cancelar'
-    }, function(result, data) {
-        if (result) {
-            $tr.remove();
-        }
-    });
-});
-
-// Inicia o script quando o documento HTML estiver totalmente carregado
-$(function() {
-    Changelog.init();
-});

@@ -40,10 +40,52 @@
           <p class="text-xl text-slate-600 max-w-2xl mx-auto">
             Acompanhe todas as novidades, melhorias e correções do sistema
           </p>
+          <button @click="abrirModal" class="bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 py-2 rounded-md hover:from-slate-900 hover:to-slate-800 transition-all duration-300 mt-4">
+            Sugerir Melhoria
+          </button>
+        </div>
+
+        <div v-if="modalAberto" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
+
+            <!-- Botão de Fechar -->
+             <button @click="fecharModal" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+             </button>
+
+             <!-- Conteúdo do Modal -->
+             <h1 class="text-2xl font-bold text-slate-800 mb-4">Sugerir Melhoria</h1>
+             <div class="mb-4">
+               <label for="versaoSelect" class="block text-slate-700 font-medium mb-2">Versão</label>
+               <select id="versaoSelect" v-model="versaoSelecionada" class="w-full p-2 border border-slate-300 rounded-md">
+                 <option value="" disabled selected>Selecione a versão</option>
+                 <option v-for="version in groupedVersions" :key="version.numeroVersao" :value="version.numeroVersao">
+                   {{ version.numeroVersao }}
+                 </option>
+               </select>
+             </div>
+
+             <label for="email" class="block text-slate-700 font-medium mb-2">Email</label>
+             <input type="email" placeholder="Preencha seu email" class="w-full p-2 border border-slate-300 rounded-md mb-4">
+
+             <label for="titulo" class="block text-slate-700 font-medium mb-2">Título</label>
+             <input type="text" placeholder="Preencha o título da sugestão" class="w-full p-2 border border-slate-300 rounded-md mb-4">
+
+             <label for="sugestao" class="block text-slate-700 font-medium mb-2">Sugestão</label>
+             <textarea placeholder="Preencha o que você deseja sugerir" class="w-full p-2 border border-slate-300 rounded-md mb-4"></textarea>
+             <button class="bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 py-2 rounded-md hover:from-slate-900 hover:to-slate-800 transition-all duration-300 mt-4">
+              Enviar
+             </button>
+             <button @click="fecharModal" class="ml-4 bg-red-500 text-white px-4 py-2 rounded-md hover:from-slate-900 hover:to-slate-800 transition-all duration-300 mt-4">
+              Cancelar
+             </button>
+            </div>
         </div>
 
         <!-- Version Cards -->
-        <div v-for="version in groupedVersions" :key="version.versionNumber"
+        <div v-for="version in groupedVersions" :key="version.numeroVersao"
              class="bg-white mb-8 rounded-3xl shadow-xl overflow-hidden border border-slate-200 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
 
           <!-- Version Header -->
@@ -56,7 +98,7 @@
                   </svg>
                 </div>
                 <h3 class="text-2xl lg:text-3xl font-bold text-white">
-                  Versão {{ version.versionNumber }}
+                  Versão {{ version.numeroVersao }}
                 </h3>
               </div>
               <div class="mt-3 sm:mt-0">
@@ -64,7 +106,7 @@
                   <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  {{ formatDate(version.releaseDate) }}
+                  {{ formatDate(version.dataLancamento) }}
                 </span>
               </div>
             </div>
@@ -129,6 +171,8 @@ import options from '../services/options.json';
 
 const baseUrl = "https://fluighml.rn.sebrae.com.br"
 
+
+
 export default {
   name: 'ChangelogWidget',
   data() {
@@ -136,20 +180,22 @@ export default {
       rawValues: [],
       loading: true,
       error: null,
+      modalAberto: false,
     };
   },
+
   computed: {
     groupedVersions() {
       if (!this.rawValues || this.rawValues.length === 0) return [];
       const groups = this.rawValues.reduce((acc, change) => {
-        const { versionNumber, releaseDate } = change;
-        if (!acc[versionNumber]) {
-          acc[versionNumber] = { versionNumber, releaseDate, changes: [] };
+        const { numeroVersao, dataLancamento } = change;
+        if (!acc[numeroVersao]) {
+          acc[numeroVersao] = { numeroVersao, dataLancamento, changes: [] };
         }
-        acc[versionNumber].changes.push(change);
+        acc[numeroVersao].changes.push(change);
         return acc;
       }, {});
-      return Object.values(groups).sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate));
+      return Object.values(groups).sort((a, b) => new Date(b.dataLancamento) - new Date(a.dataLancamento));
     },
   },
   methods: {
@@ -167,17 +213,20 @@ export default {
         'Outro': 'bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800 border border-slate-300',
       };
       return classes[type] || 'bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800 border border-slate-300';
+    },
+    abrirModal() {
+      this.modalAberto = true;
+      document.body.classList.add('overflow-hidden');
+    },
+    fecharModal() {
+      this.modalAberto = false;
+      document.body.classList.remove('overflow-hidden');
     }
   },
   async mounted() {
     this.loading = true;
-    setTimeout(() => {
-      this.rawValues = mockChangelogData.values;
-      this.loading = false;
-    }, 500);
 
     getChangelogs(baseUrl, options)
-    console.log(getChangelogs(baseUrl, options))
       .then(data => {
         this.rawValues = data;
       })
