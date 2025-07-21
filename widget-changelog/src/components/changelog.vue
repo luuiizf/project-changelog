@@ -106,7 +106,7 @@
                   <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  {{ formatDate(version.dataLancamento) }}
+                  {{ version.dataLancamento }}
                 </span>
               </div>
             </div>
@@ -165,46 +165,64 @@
 </template>
 
 <script>
-import { mockChangelogData } from '../mock.js';
-import { getChangelogs } from '../services/fluigService.js';
-import options from '../services/options.json';
+import { getChangelogs, getChangelogsWithFilters } from '../services/fluigService.js';
 
-const baseUrl = "https://fluighml.rn.sebrae.com.br"
-
-
+const baseUrl = "https://fluighml.rn.sebrae.com.br";
 
 export default {
   name: 'ChangelogWidget',
   data() {
     return {
-      rawValues: [],
+      versions: [],
+      details: [],
       loading: true,
       error: null,
       modalAberto: false,
+      versaoSelecionada: '',
     };
   },
 
   computed: {
     groupedVersions() {
-      if (!this.rawValues || this.rawValues.length === 0) return [];
-      const groups = this.rawValues.reduce((acc, change) => {
-        const { numeroVersao, dataLancamento } = change;
-        if (!acc[numeroVersao]) {
-          acc[numeroVersao] = { numeroVersao, dataLancamento, changes: [] };
+      if (!this.versions || this.versions.length === 0) return [];
+
+      // Cria um mapa dos detalhes usando o 'masterid' como chave
+      const detailsMap = new Map();
+      this.details.forEach(detail => {
+        // CORREÇÃO 1: A chave do filho é 'masterid'
+        const parentId = detail.masterid;
+
+        if (!detailsMap.has(parentId)) {
+          detailsMap.set(parentId, []);
         }
-        acc[numeroVersao].changes.push(change);
-        return acc;
-      }, {});
-      return Object.values(groups).sort((a, b) => new Date(b.dataLancamento) - new Date(a.dataLancamento));
+        detailsMap.get(parentId).push(detail);
+      });
+
+      const combined = this.versions.map(version => {
+        // CORREÇÃO 2: Buscamos os filhos usando o 'id' da versão pai
+        const relatedChanges = detailsMap.get(version.id) || [];
+
+        return {
+          ...version,
+          changes: relatedChanges.map(change => ({
+            changeTitle: change.tituloFilho,
+            changeDescription: change.descricaoFilho,
+            changeType: change.tipoFilho,
+            changeImageId: change.imagemFilho,
+          }))
+        };
+      });
+
+      // Ordena as versões da mais recente para a mais antiga
+      return combined.sort((a, b) => {
+        const dateA = a.dataLancamento.split('/').reverse().join('-');
+        const dateB = b.dataLancamento.split('/').reverse().join('-');
+        return new Date(dateB) - new Date(dateA);
+      });
     },
   },
+
   methods: {
-    formatDate(dateString) {
-      if (!dateString) return '';
-      const date = new Date(dateString + 'T00:00:00');
-      const options = { year: 'numeric', month: 'long', day: 'numeric' };
-      return date.toLocaleDateString('pt-BR', options);
-    },
     getLabelClass(type) {
       const classes = {
         'Nova Funcionalidade': 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border border-green-300',
@@ -212,7 +230,7 @@ export default {
         'Correção de Bug': 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border border-red-300',
         'Outro': 'bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800 border border-slate-300',
       };
-      return classes[type] || 'bg-gradient-to-r from-slate-100 to-slate-200 text-slate-800 border border-slate-300';
+      return classes[type] || classes['Outro'];
     },
     abrirModal() {
       this.modalAberto = true;
@@ -223,20 +241,23 @@ export default {
       document.body.classList.remove('overflow-hidden');
     }
   },
+
   async mounted() {
     this.loading = true;
-
-    getChangelogs(baseUrl, options)
-      .then(data => {
-        this.rawValues = data;
-      })
-      .catch(e => {
-        this.error = "Não foi possível carregar as informações. Verifique as permissões do dataset.";
-        console.error(e);
-      })
-      .finally(() => {
-        this.loading = false;
-      });
+    this.error = null;
+    try {
+      const [versionsData, detailsData] = await Promise.all([
+        getChangelogs(baseUrl),
+        getChangelogsWithFilters(baseUrl)
+      ]);
+      this.versions = versionsData;
+      this.details = detailsData;
+    } catch (e) {
+      this.error = "Não foi possível carregar as informações. Verifique as permissões dos datasets.";
+      console.error("Falha ao buscar dados do changelog:", e);
+    } finally {
+      this.loading = false;
+    }
   }
 };
 </script>
