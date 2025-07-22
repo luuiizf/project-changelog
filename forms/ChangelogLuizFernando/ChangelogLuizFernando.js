@@ -42,22 +42,7 @@ const Changelog = {
         const tipo = $('#tipoChangelog').val();
         const titulo = $('#titulo').val();
         const descricao = this.mainQuill ? this.mainQuill.root.innerHTML : '';
-        const inputFile = $('#imagemAlteracao')[0];
-
-        if (!tipo || !titulo || !descricao || !inputFile || !inputFile.files.length) {
-            FLUIGC.toast({ title: 'Atenção: ', message: 'Preencha todos os campos e selecione uma imagem.', type: 'warning' });
-            return;
-        }
-
-        const file = inputFile.files[0];
-        const fileName = file.name;
-        const idPasta = 158963; // ID da pasta onde a imagem será salva
-
-        const docId = await this.salvarImagem(file, fileName, idPasta);
-        if (!docId) {
-            FLUIGC.toast({ title: 'Erro: ', message: 'Não foi possível salvar a imagem.', type: 'danger' });
-            return;
-        }
+        const inputFile = $('#imagemAnexo').val();
 
         // Adiciona linha na tabela dinâmica
         const linha = wdkAddChild(this.tabelaFilha);
@@ -65,7 +50,7 @@ const Changelog = {
         $(`#tipoFilho___${linha}`).val(tipo);
         $(`#tituloFilho___${linha}`).val(titulo);
         $(`#descricaoFilho___${linha}`).val(descricao);
-        $(`#imagemFilho___${linha}`).val(fileName);
+        $(`#imagemFilho___${linha}`).val(inputFile);
 
         this.limparCampos();
     },
@@ -74,7 +59,8 @@ const Changelog = {
         $('#tipoChangelog').val('');
         $('#titulo').val('');
         if (this.mainQuill) this.mainQuill.setContents([]);
-        $('#imagemAlteracao').val('');
+        $('#imagemAnexo').val('');
+        
     },
 
     initQuillEditor(container) {
@@ -97,31 +83,4 @@ const Changelog = {
             $('#descricao').val(quill.root.innerHTML);
         });
     },
-
-    async salvarImagem(file, fileName, folderId) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('pathId', folderId);
-        formData.append('nameFile', fileName);
-
-        try {
-            const baseUrl = 'https://fluighml.rn.sebrae.com.br';
-            const url = `${baseUrl}/fluighub/rest/service/execute/uploadfile`;
-
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData
-            });
-
-            const res = await response.json();
-            if (res.code !== 200) {
-                throw new Error('Erro ao enviar o arquivo');
-            }
-
-            return JSON.parse(res.message).documentId;
-        } catch (err) {
-            console.error('Erro no upload:', err);
-            return false;
-        }
-    }
 };

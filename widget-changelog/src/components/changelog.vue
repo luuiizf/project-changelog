@@ -108,12 +108,17 @@
                   </svg>
                   {{ version.dataLancamento }}
                 </span>
+                <button class="bg-white text-black items-center px-4 py-2 rounded-full ml-4 hover:bg-slate-200 transition-all duration-300 shadow-md"
+                @click="ocultarDetalhes(version.numeroVersao)">
+                {{ detalhesOcultos.includes(version.numeroVersao) ? 'Mostrar' : 'Ocultar' }}
+                </button>
               </div>
             </div>
           </div>
 
           <!-- Changes List -->
-          <div class="divide-y divide-slate-100">
+          <div class="divide-y divide-slate-100"
+               v-if="!detalhesOcultos.includes(version.numeroVersao)">
             <div v-for="(change, index) in version.changes" :key="index"
                  class="px-8 py-6 hover:bg-slate-50 transition-colors duration-200 group">
 
@@ -139,9 +144,7 @@
               <!-- Change Image -->
               <div v-if="change.changeImageId" class="mt-6">
                 <div class="rounded-2xl overflow-hidden shadow-lg border border-slate-200 hover:shadow-xl transition-shadow duration-300">
-                  <img :src="'/webdesk/streamcontrol/' + change.changeImageId"
-                       alt="Imagem da alteração"
-                       class="w-full h-auto object-cover" />
+                  <img :src="change.changeImageId" :alt="change.changeImageId" class="" />
                 </div>
               </div>
             </div>
@@ -165,7 +168,7 @@
 </template>
 
 <script>
-import { getChangelogs, getChangelogsWithFilters } from '../services/fluigService.js';
+import { getChangelogs, getChangelogsWithFilters, consultarAnexos } from '../services/fluigService.js';
 
 const baseUrl = "https://fluighml.rn.sebrae.com.br";
 
@@ -175,10 +178,12 @@ export default {
     return {
       versions: [],
       details: [],
+      anexos: [],
       loading: true,
       error: null,
       modalAberto: false,
       versaoSelecionada: '',
+      detalhesOcultos: [],
     };
   },
 
@@ -198,18 +203,25 @@ export default {
         detailsMap.get(parentId).push(detail);
       });
 
+      const anexosMap = new Map();
+        this.anexos.forEach(anexo => {
+          anexosMap.set(anexo.file, anexo.downloadUrl);
+        });
+
       const combined = this.versions.map(version => {
         // CORREÇÃO 2: Buscamos os filhos usando o 'id' da versão pai
         const relatedChanges = detailsMap.get(version.id) || [];
+          const downloadUrl = anexosMap.get(document.id);
+          console.log(downloadUrl);
+          return {
+            ...version,
+            changes: relatedChanges.map(change => ({
+              changeTitle: change.tituloFilho,
+              changeDescription: change.descricaoFilho,
+              changeType: change.tipoFilho,
+              changeImageId: downloadUrl || null,
+            }))
 
-        return {
-          ...version,
-          changes: relatedChanges.map(change => ({
-            changeTitle: change.tituloFilho,
-            changeDescription: change.descricaoFilho,
-            changeType: change.tipoFilho,
-            changeImageId: change.imagemFilho,
-          }))
         };
       });
 
@@ -239,24 +251,40 @@ export default {
     fecharModal() {
       this.modalAberto = false;
       document.body.classList.remove('overflow-hidden');
+    },
+
+    ocultarDetalhes(numeroVersao) {
+    const idx = this.detalhesOcultos.indexOf(numeroVersao);
+    if (idx === -1) {
+      this.detalhesOcultos.push(numeroVersao);
+    } else {
+      this.detalhesOcultos.splice(idx, 1); // Se já está oculto, mostra novamente
     }
+  },
   },
 
   async mounted() {
     this.loading = true;
     this.error = null;
     try {
-      const [versionsData, detailsData] = await Promise.all([
+      const [versionsData, detailsData, anexosData] = await Promise.all([
         getChangelogs(baseUrl),
-        getChangelogsWithFilters(baseUrl)
-      ]);
+        getChangelogsWithFilters(baseUrl),
+        consultarAnexos(baseUrl)
+      ])
       this.versions = versionsData;
       this.details = detailsData;
+      console.log(this.details);
+      this.anexos = anexosData;
+      console.log(this.anexos);
     } catch (e) {
       this.error = "Não foi possível carregar as informações. Verifique as permissões dos datasets.";
       console.error("Falha ao buscar dados do changelog:", e);
     } finally {
       this.loading = false;
+    }
+    for (const version of this.groupedVersions) {
+      this.detalhesOcultos.push(version.numeroVersao);
     }
   }
 };
