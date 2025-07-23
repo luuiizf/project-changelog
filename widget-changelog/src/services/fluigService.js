@@ -74,14 +74,14 @@ export async function getChangelogsWithFilters(baseUrl) {
   }
 }
 
-export async function consultarAnexos(baseUrl) {
+export async function consultarAnexos(baseUrl, numFluig) {
   try {
     const url = `${baseUrl}/fluighub2/rest/service/execute/datasearch`;
     const filtrarAnexos =
     `datasetId=dsGetAnexos` +
     `&constraintsField=processid` +
-    `&constraintsInitialValue=135445` +
-    `&constraintsFinalValue=135445`;
+    `&constraintsInitialValue=${numFluig}` +
+    `&constraintsFinalValue=${numFluig}`;
 
     const response = await fetch(url, {
       method: 'POST',

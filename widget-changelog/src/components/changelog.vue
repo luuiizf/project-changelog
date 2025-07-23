@@ -178,7 +178,7 @@ export default {
     return {
       versions: [],
       details: [],
-      anexos: [],
+      anexosMap: new Map(),
       loading: true,
       error: null,
       modalAberto: false,
@@ -189,49 +189,39 @@ export default {
 
   computed: {
     groupedVersions() {
-      if (!this.versions || this.versions.length === 0) return [];
+      if (!this.versions || !this.details) return [];
 
-      // Cria um mapa dos detalhes usando o 'masterid' como chave
       const detailsMap = new Map();
-      this.details.forEach(detail => {
-        // CORREÇÃO 1: A chave do filho é 'masterid'
-        const parentId = detail.masterid;
-
-        if (!detailsMap.has(parentId)) {
-          detailsMap.set(parentId, []);
-        }
-        detailsMap.get(parentId).push(detail);
-      });
-
-      const anexosMap = new Map();
-        this.anexos.forEach(anexo => {
-          anexosMap.set(anexo.file, anexo.downloadUrl);
+        this.details.forEach(detail => {
+          const masterId = detail.masterid;
+          if (!detailsMap.has(masterId)) detailsMap.set(masterId, []);
+          detailsMap.get(masterId).push(detail);
         });
 
-      const combined = this.versions.map(version => {
-        // CORREÇÃO 2: Buscamos os filhos usando o 'id' da versão pai
+      return this.versions.map(version => {
         const relatedChanges = detailsMap.get(version.id) || [];
-          const downloadUrl = anexosMap.get(document.id);
-          console.log(downloadUrl);
-          return {
-            ...version,
-            changes: relatedChanges.map(change => ({
-              changeTitle: change.tituloFilho,
-              changeDescription: change.descricaoFilho,
-              changeType: change.tipoFilho,
-              changeImageId: downloadUrl || null,
-            }))
 
+            const changesComImagem = relatedChanges.map(change => {
+              const imagens = this.anexosMap.get(change.numFluig) || [];
+              console.log(imagens)
+              return {
+                changeTitle: change.tituloFilho,
+                changeDescription: change.descricaoFilho,
+                changeType: change.tipoFilho,
+                changeImageId: imagens[0] || null // só pega a primeira imagem
+              };
+            });
+
+        return {
+          ...version,
+          changes: changesComImagem,
         };
-      });
-
-      // Ordena as versões da mais recente para a mais antiga
-      return combined.sort((a, b) => {
+      }).sort((a, b) => {
         const dateA = a.dataLancamento.split('/').reverse().join('-');
         const dateB = b.dataLancamento.split('/').reverse().join('-');
         return new Date(dateB) - new Date(dateA);
       });
-    },
+    }
   },
 
   methods: {
@@ -266,23 +256,40 @@ export default {
   async mounted() {
     this.loading = true;
     this.error = null;
+
     try {
-      const [versionsData, detailsData, anexosData] = await Promise.all([
+      const [versionsData, detailsData] = await Promise.all([
         getChangelogs(baseUrl),
         getChangelogsWithFilters(baseUrl),
-        consultarAnexos(baseUrl)
-      ])
+      ]);
+
       this.versions = versionsData;
       this.details = detailsData;
-      console.log(this.details);
-      this.anexos = anexosData;
-      console.log(this.anexos);
+
+      // Buscar anexos para todas as versões
+      const allAnexos = [];
+      console.log(allAnexos)
+
+      for (const version of this.versions) {
+        const anexos = await consultarAnexos(baseUrl, version.numFluig);
+        allAnexos.push(...anexos);
+      }
+
+      // Criar mapa de anexos por processId (numFluig)
+      this.anexosMap = new Map();
+      allAnexos.forEach(anexo => {
+        const id = anexo.numFluig;
+        if (!this.anexosMap.has(id)) this.anexosMap.set(id, []);
+        this.anexosMap.get(id).push(anexo.downloadUrl);
+      });
+
     } catch (e) {
       this.error = "Não foi possível carregar as informações. Verifique as permissões dos datasets.";
-      console.error("Falha ao buscar dados do changelog:", e);
+      console.error("Erro:", e);
     } finally {
       this.loading = false;
     }
+
     for (const version of this.groupedVersions) {
       this.detalhesOcultos.push(version.numeroVersao);
     }
