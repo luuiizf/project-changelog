@@ -32,11 +32,10 @@
 
       <!-- Main Content -->
       <div v-if="!loading && !error" class="space-y-10">
+
         <!-- Header Section -->
         <div class="text-center">
-          <h1 class="text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
-            Histórico de Alterações
-          </h1>
+          <h1 class="text-4xl lg:text-5xl font-bold text-slate-800 mb-4">Histórico de Alterações</h1>
           <p class="text-xl text-slate-600 max-w-2xl mx-auto">
             Acompanhe todas as novidades, melhorias e correções do sistema
           </p>
@@ -45,50 +44,45 @@
           </button>
         </div>
 
+        <!-- Modal -->
         <div v-if="modalAberto" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
-
-            <!-- Botão de Fechar -->
-             <button @click="fecharModal" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700">
+            <button @click="fecharModal" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700">
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
-             </button>
-
-             <!-- Conteúdo do Modal -->
-             <h1 class="text-2xl font-bold text-slate-800 mb-4">Sugerir Melhoria</h1>
-             <div class="mb-4">
-               <label for="versaoSelect" class="block text-slate-700 font-medium mb-2">Versão</label>
-               <select id="versaoSelect" v-model="versaoSelecionada" class="w-full p-2 border border-slate-300 rounded-md">
-                 <option value="" disabled selected>Selecione a versão</option>
-                 <option v-for="version in groupedVersions" :key="version.numeroVersao" :value="version.numeroVersao">
-                   {{ version.numeroVersao }}
-                 </option>
-               </select>
-             </div>
-
-             <label for="email" class="block text-slate-700 font-medium mb-2">Email</label>
-             <input type="email" placeholder="Preencha seu email" class="w-full p-2 border border-slate-300 rounded-md mb-4">
-
-             <label for="titulo" class="block text-slate-700 font-medium mb-2">Título</label>
-             <input type="text" placeholder="Preencha o título da sugestão" class="w-full p-2 border border-slate-300 rounded-md mb-4">
-
-             <label for="sugestao" class="block text-slate-700 font-medium mb-2">Sugestão</label>
-             <textarea placeholder="Preencha o que você deseja sugerir" class="w-full p-2 border border-slate-300 rounded-md mb-4"></textarea>
-             <button class="bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 py-2 rounded-md hover:from-slate-900 hover:to-slate-800 transition-all duration-300 mt-4">
-              Enviar
-             </button>
-             <button @click="fecharModal" class="ml-4 bg-red-500 text-white px-4 py-2 rounded-md hover:from-slate-900 hover:to-slate-800 transition-all duration-300 mt-4">
-              Cancelar
-             </button>
+            </button>
+            <h1 class="text-2xl font-bold text-slate-800 mb-4">Sugerir Melhoria</h1>
+            <div class="mb-4">
+              <label for="versaoSelect" class="block text-slate-700 font-medium mb-2">Versão</label>
+              <select id="versaoSelect" v-model="versaoSelecionada" class="w-full p-2 border border-slate-300 rounded-md">
+                <option value="" disabled selected>Selecione a versão</option>
+                <option v-for="version in groupedVersions" :key="version.numeroVersao" :value="version.numeroVersao">
+                  {{ version.numeroVersao }}
+                </option>
+              </select>
             </div>
+            <label for="email" class="block text-slate-700 font-medium mb-2">Email</label>
+            <input type="email" placeholder="Preencha seu email" class="w-full p-2 border border-slate-300 rounded-md mb-4">
+            <label for="titulo" class="block text-slate-700 font-medium mb-2">Título</label>
+            <input type="text" placeholder="Preencha o título da sugestão" class="w-full p-2 border border-slate-300 rounded-md mb-4">
+            <label for="sugestao" class="block text-slate-700 font-medium mb-2">Sugestão</label>
+            <textarea placeholder="Preencha o que você deseja sugerir" class="w-full p-2 border border-slate-300 rounded-md mb-4"></textarea>
+            <div class="flex justify-end">
+              <button class="bg-slate-800 text-white px-4 py-2 rounded-md hover:bg-slate-900 transition-all duration-300">
+                Enviar
+              </button>
+              <button @click="fecharModal" class="ml-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-all duration-300">
+                Cancelar
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Version Cards -->
-        <div v-for="version in groupedVersions" :key="version.numeroVersao"
-             class="bg-white mb-8 rounded-3xl shadow-xl overflow-hidden border border-slate-200 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
+        <div v-for="version in groupedVersions" :key="version.numeroVersao" class="bg-white mb-8 rounded-3xl shadow-xl overflow-hidden border border-slate-200 transition-all duration-300 hover:scale-[1.02]">
 
-          <!-- Version Header -->
+          <!-- Header da Versão -->
           <div class="bg-gradient-to-r from-slate-800 to-slate-900 px-8 py-6">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
               <div class="flex items-center space-x-4">
@@ -97,57 +91,44 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h3 class="text-2xl lg:text-3xl font-bold text-white">
-                  Versão {{ version.numeroVersao }}
-                </h3>
+                <h3 class="text-2xl lg:text-3xl font-bold text-white">Versão {{ version.numeroVersao }}</h3>
               </div>
-              <div class="mt-3 sm:mt-0">
+              <div class="mt-3 sm:mt-0 flex items-center">
                 <span class="inline-flex items-center px-4 py-2 bg-white/10 text-white text-sm font-medium rounded-full backdrop-blur-sm">
                   <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   {{ version.dataLancamento }}
                 </span>
-                <button class="bg-white text-black items-center px-4 py-2 rounded-full ml-4 hover:bg-slate-200 transition-all duration-300 shadow-md"
-                @click="ocultarDetalhes(version.numeroVersao)">
-                {{ detalhesOcultos.includes(version.numeroVersao) ? 'Mostrar' : 'Ocultar' }}
+                <button @click="ocultarDetalhes(version.numeroVersao)" class="ml-4 bg-white text-black px-4 py-2 rounded-full hover:bg-slate-200 transition-all duration-300 shadow-md">
+                  {{ detalhesOcultos.includes(version.numeroVersao) ? 'Mostrar' : 'Ocultar' }}
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Changes List -->
-          <div class="divide-y divide-slate-100"
-               v-if="!detalhesOcultos.includes(version.numeroVersao)">
-            <div v-for="(change, index) in version.changes" :key="index"
-                 class="px-8 py-6 hover:bg-slate-50 transition-colors duration-200 group">
+          <div v-if="!detalhesOcultos.includes(version.numeroVersao)" class="p-6">
 
-              <!-- Change Header -->
-              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4">
-                <div class="flex items-center space-x-4 mb-3 sm:mb-0">
-                  <span :class="getLabelClass(change.changeType)"
-                        class="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm">
-                    {{ change.changeType }}
-                  </span>
-                  <h4 class="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                    {{ change.changeTitle }}
-                  </h4>
-                </div>
-              </div>
 
-              <!-- Change Description -->
-              <div v-if="change.changeDescription"
-                   v-html="change.changeDescription"
-                   class="prose prose-slate prose-sm max-w-none text-slate-700 leading-relaxed mb-4">
-              </div>
 
-              <!-- Change Image -->
-              <div v-if="change.changeImageId" class="mt-6">
-                <div class="rounded-2xl overflow-hidden shadow-lg border border-slate-200 hover:shadow-xl transition-shadow duration-300">
-                  <img :src="change.changeImageId" :alt="change.changeImageId" class="" />
-                </div>
+            <!-- Lista de Changes -->
+            <div class="divide-y divide-slate-100">
+              <div v-for="(change, i) in version.changes" :key="i" class="py-4">
+                <span :class="getLabelClass(change.type)" class="text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm">
+                  {{ change.type }}
+                </span>
+                <h4 class="text-xl font-bold text-slate-900 mt-1">{{ change.title }}</h4>
+                <div v-html="change.description" class="prose prose-slate prose-sm max-w-none text-slate-700 leading-relaxed mt-2"></div>
               </div>
             </div>
+
+              <!-- Galeria de Imagens da Versão -->
+              <div v-if="version.images.length" class="mb-6 grid grid-cols-3 gap-4">
+              <div v-for="(url, i) in version.images" :key="i" class="rounded-lg overflow-hidden">
+                <img :src="url" class="object-cover w-full h-32" />
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -161,8 +142,8 @@
           <h3 class="text-xl font-semibold text-slate-600 mb-2">Nenhuma alteração encontrada</h3>
           <p class="text-slate-500">Não há registros de mudanças disponíveis no momento.</p>
         </div>
-      </div>
 
+      </div>
     </div>
   </div>
 </template>
@@ -189,38 +170,34 @@ export default {
 
   computed: {
     groupedVersions() {
-      if (!this.versions || !this.details) return [];
+      if (!this.versions.length || !this.details.length) return [];
 
+      // Mapeia detalhes por versão (id)
       const detailsMap = new Map();
-        this.details.forEach(detail => {
-          const masterId = detail.masterid;
-          if (!detailsMap.has(masterId)) detailsMap.set(masterId, []);
-          detailsMap.get(masterId).push(detail);
-        });
-
-      return this.versions.map(version => {
-        const relatedChanges = detailsMap.get(version.id) || [];
-
-            const changesComImagem = relatedChanges.map(change => {
-              const imagens = this.anexosMap.get(change.numFluig) || [];
-              console.log(imagens)
-              return {
-                changeTitle: change.tituloFilho,
-                changeDescription: change.descricaoFilho,
-                changeType: change.tipoFilho,
-                changeImageId: imagens[0] || null // só pega a primeira imagem
-              };
-            });
-
-        return {
-          ...version,
-          changes: changesComImagem,
-        };
-      }).sort((a, b) => {
-        const dateA = a.dataLancamento.split('/').reverse().join('-');
-        const dateB = b.dataLancamento.split('/').reverse().join('-');
-        return new Date(dateB) - new Date(dateA);
+      this.details.forEach(d => {
+        if (!detailsMap.has(d.masterid)) detailsMap.set(d.masterid, []);
+        detailsMap.get(d.masterid).push(d);
       });
+
+      // Constrói o array final
+      return this.versions
+        .map(v => {
+          const changes = (detailsMap.get(v.id) || []).map(ch => ({
+            title: ch.tituloFilho,
+            description: ch.descricaoFilho,
+            type: ch.tipoFilho
+          }));
+
+          return {
+            ...v,
+            images: this.anexosMap.get(v.numFluig) || [],
+            changes
+          };
+        })
+        .sort((a, b) => {
+          const fmt = s => s.split('/').reverse().join('-');
+          return new Date(fmt(b.dataLancamento)) - new Date(fmt(a.dataLancamento));
+        });
     }
   },
 
@@ -242,15 +219,11 @@ export default {
       this.modalAberto = false;
       document.body.classList.remove('overflow-hidden');
     },
-
     ocultarDetalhes(numeroVersao) {
-    const idx = this.detalhesOcultos.indexOf(numeroVersao);
-    if (idx === -1) {
-      this.detalhesOcultos.push(numeroVersao);
-    } else {
-      this.detalhesOcultos.splice(idx, 1); // Se já está oculto, mostra novamente
+      const i = this.detalhesOcultos.indexOf(numeroVersao);
+      if (i === -1) this.detalhesOcultos.push(numeroVersao);
+      else this.detalhesOcultos.splice(i, 1);
     }
-  },
   },
 
   async mounted() {
@@ -258,40 +231,39 @@ export default {
     this.error = null;
 
     try {
-      const [versionsData, detailsData] = await Promise.all([
+      // 1) Pega versões e detalhes
+      const [versions, details] = await Promise.all([
         getChangelogs(baseUrl),
-        getChangelogsWithFilters(baseUrl),
+        getChangelogsWithFilters(baseUrl)
       ]);
+      this.versions = versions;
+      this.details  = details;
 
-      this.versions = versionsData;
-      this.details = detailsData;
+      // 2) Busca anexos em paralelo por versão
+      const anexosPorVersao = await Promise.all(
+        this.versions.map(v =>
+          consultarAnexos(baseUrl, v.numFluig)
+            .then(a => ({ numFluig: v.numFluig, anexos: a }))
+        )
+      );
 
-      // Buscar anexos para todas as versões
-      const allAnexos = [];
-      console.log(allAnexos)
-
-      for (const version of this.versions) {
-        const anexos = await consultarAnexos(baseUrl, version.numFluig);
-        allAnexos.push(...anexos);
-      }
-
-      // Criar mapa de anexos por processId (numFluig)
+      // 3) Monta o mapa numFluig → [ downloadUrl ]
       this.anexosMap = new Map();
-      allAnexos.forEach(anexo => {
-        const id = anexo.numFluig;
-        if (!this.anexosMap.has(id)) this.anexosMap.set(id, []);
-        this.anexosMap.get(id).push(anexo.downloadUrl);
+      anexosPorVersao.forEach(({ numFluig, anexos }) => {
+        this.anexosMap.set(
+          numFluig,
+          anexos.map(a => a.downloadUrl)
+        );
       });
+
+      // Inicializa estados de detalhe oculto
+      this.detalhesOcultos = this.versions.map(v => v.numeroVersao);
 
     } catch (e) {
       this.error = "Não foi possível carregar as informações. Verifique as permissões dos datasets.";
-      console.error("Erro:", e);
+      console.error("Erro ao buscar dados do changelog:", e);
     } finally {
       this.loading = false;
-    }
-
-    for (const version of this.groupedVersions) {
-      this.detalhesOcultos.push(version.numeroVersao);
     }
   }
 };
