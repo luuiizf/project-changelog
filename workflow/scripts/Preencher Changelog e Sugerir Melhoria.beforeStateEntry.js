@@ -5,4 +5,8 @@ function beforeStateEntry(sequenceId){
     if(proxAtividade == 5){
 		hAPI.setCardValue("numFluig", fluigid)
 	}
+    
+    if(proxAtividade == 17){
+    	hAPI.setCardValue("status", "finalizado")
+    }
 }

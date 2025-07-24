@@ -2,13 +2,13 @@
 	"version": "1.0.0",
 	"configurations": [
 		{
-			"id": "4c7vllms2i7md8qsn0q33ldiz1ovvd",
+			"id": "v099z1lqv4emdhbvk2dky63crmyqs",
 			"name": "Sebrae",
 			"host": "fluighml.rn.sebrae.com.br",
 			"ssl": true,
 			"port": 443,
 			"username": "luiz.nery",
-			"password": "eyJpdiI6ImQ1NzAxZDhhMTNmZTM5NGNkOTY0YTEzYjRlMjQyMzQ4Iiwic2FsdCI6IjhlNTc2MzFlZmU0NTExMGExMGRlYjhjMzQ3NjEzOTFjIiwidGV4dCI6IjQyZDVmNDBmYzdmYjUyNTgxZGFhNmY0YmZmNzM5NGVjIn0=",
+			"password": "eyJpdiI6IjM2ODE1M2Q2MGI5YWEyMDAwYjlmNmQ2MTcyNDkwMWRhIiwic2FsdCI6IjJlYmUxZmMwMTU5OThmZjhhZTBiMjIzNzJlZjNmZGE5IiwidGV4dCI6ImI5ZWE5MjBjYTVkOGQ0YmU0MDA3NmUzYTFhZTQ0YzU5In0=",
 			"userCode": "luiz.nery",
 			"confirmExporting": false,
 			"companyId": 1

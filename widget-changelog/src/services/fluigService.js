@@ -1,13 +1,19 @@
 export async function getChangelogs(baseUrl) {
   try {
     const url = `${baseUrl}/fluighub2/rest/service/execute/datasearch`;
+    const filtros =
+      `datasetId=dschangelogLuiz` +
+      `&constraintsField=status` +
+      `&constraintsInitialValue=finalizado` +
+      `&constraintsFinalValue=finalizado`;
+
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         endpoint: 'dataset',
         method: 'get',
-        params: 'datasetId=dschangelogLuiz'
+        params: filtros
       })
     });
 
@@ -116,20 +122,45 @@ export async function consultarAnexos(baseUrl, numFluig) {
 }
 
 
-// export async function consultarAnexos(processid) {
-//   try {
-//     var consulta = DatasetFactory.createConstraint("processid", '135445', '135445', ConstraintType.MUST)
 
-//     var attachmentsDs = DatasetFactory.getDataset(
-// 		"dsGetAnexos",
-// 		null,
-// 		[consulta],
-//     	null
-// 	);
+export async function enviarSugestao(baseUrl, dados) {
+  try {
+    const url = `${baseUrl}/fluighub2/rest/service/execute/datasearch`;
+    const parametros =
+      `datasetId=dsSugestaoChangelog` +
+      `constraintsField=email` +
+      `&constraintsInitialValue=${dados.email}` +
+      `&constraintsFinalValue=${dados.email}` +
+      `&constraintsField=titulo` +
+      `&constraintsInitialValue=${dados.titulo}` +
+      `&constraintsFinalValue=${dados.titulo}` +
+      `&constraintsField=descricao` +
+      `&constraintsInitialValue=${dados.descricao}` +
+      `&constraintsFinalValue=${dados.descricao}` +
+      `&constraintsField=versao` +
+      `&constraintsInitialValue=${dados.versao}` +
+      `&constraintsFinalValue=${dados.versao}`
 
-//     return attachmentsDs;
-//   } catch (err) {
-//     console.error('Falha ao buscar anexos:', err);
-//     throw err;
-//   }
-// }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        endpoint: 'dataset',
+        method: 'get',
+        params: parametros
+      })
+    });
+
+    const res = await response.json();
+
+    if (response.status !== 200) {
+      throw new Error('Erro ao enviar sugestão');
+    }
+
+    return res;
+
+  } catch (err) {
+    console.error('Falha ao enviar sugestão:', err);
+    throw err;
+  }
+}

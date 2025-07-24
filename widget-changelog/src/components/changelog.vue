@@ -42,6 +42,10 @@
           <button @click="abrirModal" class="bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 py-2 rounded-md hover:from-slate-900 hover:to-slate-800 transition-all duration-300 mt-4">
             Sugerir Melhoria
           </button>
+           <!-- <a href="https://fluighml.rn.sebrae.com.br/portal/p/sebrae/pageworkflowview?processID=PreencherChangelogeSugerirMelhoria" target="_blank">
+          <button class="bg-gradient-to-r from-slate-800 to-slate-900 text-white px-4 py-2 rounded-md hover:from-slate-900 hover:to-slate-800 transition-all duration-300 mt-4">
+            Sugerir Melhoria
+          </button> -->
         </div>
 
         <!-- Modal -->
@@ -53,21 +57,14 @@
               </svg>
             </button>
             <h1 class="text-2xl font-bold text-slate-800 mb-4">Sugerir Melhoria</h1>
-            <div class="mb-4">
-              <label for="versaoSelect" class="block text-slate-700 font-medium mb-2">Versão</label>
-              <select id="versaoSelect" v-model="versaoSelecionada" class="w-full p-2 border border-slate-300 rounded-md">
-                <option value="" disabled selected>Selecione a versão</option>
-                <option v-for="version in groupedVersions" :key="version.numeroVersao" :value="version.numeroVersao">
-                  {{ version.numeroVersao }}
-                </option>
-              </select>
-            </div>
-            <label for="email" class="block text-slate-700 font-medium mb-2">Email</label>
-            <input type="email" placeholder="Preencha seu email" class="w-full p-2 border border-slate-300 rounded-md mb-4">
-            <label for="titulo" class="block text-slate-700 font-medium mb-2">Título</label>
-            <input type="text" placeholder="Preencha o título da sugestão" class="w-full p-2 border border-slate-300 rounded-md mb-4">
-            <label for="sugestao" class="block text-slate-700 font-medium mb-2">Sugestão</label>
-            <textarea placeholder="Preencha o que você deseja sugerir" class="w-full p-2 border border-slate-300 rounded-md mb-4"></textarea>
+            <label for="email" class="block text-slate-700 font-medium mb-2">Email do Solicitante</label>
+            <input v-model="email" type="email" placeholder="Preencha seu email" class="w-full p-2 border border-slate-300 rounded-md mb-4">
+            <label for="nome" class="block text-slate-700 font-medium mb-2">Nome do Solicitante</label>
+            <input v-model="nome" type="text" placeholder="Preencha seu nome" class="w-full p-2 border border-slate-300 rounded-md mb-4">
+            <label for="titulo" class="block text-slate-700 font-medium mb-2">Título da Sugestão</label>
+            <input v-model="titulo" type="text" placeholder="Preencha o título da sugestão" class="w-full p-2 border border-slate-300 rounded-md mb-4">
+            <label for="sugestao" class="block text-slate-700 font-medium mb-2">Descrição da Sugestão</label>
+            <textarea v-model="sugestao" placeholder="Preencha o que você deseja sugerir" class="w-full p-2 border border-slate-300 rounded-md mb-4"></textarea>
             <div class="flex justify-end">
               <button class="bg-slate-800 text-white px-4 py-2 rounded-md hover:bg-slate-900 transition-all duration-300">
                 Enviar
@@ -226,7 +223,7 @@ export default {
       const i = this.detalhesOcultos.indexOf(numeroVersao);
       if (i === -1) this.detalhesOcultos.push(numeroVersao);
       else this.detalhesOcultos.splice(i, 1);
-    }
+    },
   },
 
   async mounted() {

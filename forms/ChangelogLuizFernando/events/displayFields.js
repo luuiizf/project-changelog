@@ -16,4 +16,22 @@ function displayFields(form, customHTML) {
     customHTML.append("function getMode(){ return '" + MODE + "'};");
     customHTML.append("function getProcess(){ return '" + process + "'};");
     customHTML.append("</script>");
+
+    if (activity == 4 || activity == 0) { 
+        form.setVisibleById("painelSugestaoMelhoria", true);
+        form.setVisibleById("painelAnaliseSugestao", false);
+        form.setVisibleById("painelPreenchimentoChangelog", false);
+    }
+
+    if (activity == 5) {
+        form.setVisibleById("painelSugestaoMelhoria", true);
+        form.setVisibleById("painelAnaliseSugestao", true);
+        form.setVisibleById("painelPreenchimentoChangelog", false);
+    }
+
+    if (activity == 9) {
+        form.setVisibleById("painelSugestaoMelhoria", true);
+        form.setVisibleById("painelAnaliseSugestao", false);
+        form.setVisibleById("painelPreenchimentoChangelog", true);
+    }
 }

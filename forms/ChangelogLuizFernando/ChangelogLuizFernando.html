@@ -17,16 +17,67 @@
 
     <div class="hide">
         <input type="text" name="numFluig" id="numFluig" />
+        <input type="text" name="status" id="status" />
     </div>
 
-    <div class="panel panel-primary">
+    <div class="panel panel-info" id="painelSugestaoMelhoria">
         <div class="panel-heading">
-            <h3 class="panel-title"><i class="fluigicon fluigicon-tests-central icon-sm" aria-hidden="true"></i> Formulário de Changelog</h3>
+            <h3 class="panel-title"><i class="fluigicon fluigicon-light-bulb icon-md" aria-hidden="true"></i>Sugestão de Melhoria</h3>
+        </div>
+        <div class="panel-body">
+             <div class="row">
+                <div class="col-md-6 form-group">
+                    <label for="emailSolicitante">Seu email</label>
+                    <input type="email" class="form-control" id="emailSolicitante" name="emailSolicitante" placeholder="Digite seu email"/>
+                </div>
+                <div class="col-md-6 form-group">
+                    <label for="nomeSolicitante">Nome do Solicitante</label>
+                    <input type="text" class="form-control" id="nomeSolicitante" name="nomeSolicitante" placeholder="Digite seu nome"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 form-group">
+                    <label for="tituloMelhoria">Você tem alguma sugestão de melhoria?</label>
+                    <input type="text" class="form-control" id="tituloMelhoria" name="tituloMelhoria" placeholder="Resumo da Melhoria"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 form-group">
+                    <label for="descricaoMelhoria">Descrição da Melhoria</label>
+                    <textarea class="form-control" id="descricaoMelhoria" name="descricaoMelhoria" rows="2" placeholder="Descreva a melhoria sugerida"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-warning" id="painelAnaliseSugestao">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fluigicon fluigicon-user-selection icon-md" aria-hidden="true"></i>Análise da Sugestão</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label for="validarSugestao">Validar Sugestão</label>
+                    <select class="form-control" id="validarSugestao" name="validarSugestao">
+                        <option value="" disabled selected>Selecione uma opção</option>
+                        <option value="aprovada">Aprovada</option>
+                        <option value="rejeitada">Rejeitada</option>
+                    </select>
+                </div>
+                <div class="col-md-6 form-group">
+                    <label for="justificativa">Justificativa</label>
+                    <textarea class="form-control" id="justificativa" name="justificativa" rows="1" placeholder="Descreva a justificativa para a aprovação ou rejeição"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-primary" id="painelPreenchimentoChangelog">
+        <div class="panel-heading">
+            <h3 class="panel-title"><i class="fluigicon fluigicon-tests-central icon-sm" aria-hidden="true"></i>Formulário de Changelog</h3>
         </div>
         <div class="panel-body">
             
-          <fieldset>
-              <legend>Dados da Versão (Pai)</legend>
               <div class="row">
                   <div class="col-md-4">
                       <div class="form-group">
@@ -41,12 +92,7 @@
                       </div>
                   </div>
               </div>
-          </fieldset>
-            <hr/>
             
-            <fieldset>
-                <legend>Alterações da Versão (Filhos)</legend>
-                
                 <div class="row">
                     <div class="col-md-3">
                         <div class="form-group">
@@ -93,7 +139,6 @@
                     </div>
                 </div>
                 </div>
-            </fieldset>
 
             <table class="table table-striped table-bordered" tablename="tableChanges" noaddbutton="true" nodeletebutton="true">
                 <thead>
