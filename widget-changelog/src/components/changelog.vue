@@ -123,9 +123,12 @@
             </div>
 
               <!-- Galeria de Imagens da Versão -->
-              <div v-if="version.images.length" class="mb-6 grid grid-cols-3 gap-4">
-              <div v-for="(url, i) in version.images" :key="i" class="rounded-lg overflow-hidden">
-                <img :src="url" class="object-cover w-full h-32" />
+              <div v-if="version.images.length" class="mb-6 grid gap-4">
+              <div v-for="(url, i) in version.images" :key="i" class="rounded-lg">
+                <img
+                  :src="url"
+                  class="object-cover max-w-[50%] m-auto transition-transform duration-300 origin-center hover:[transform:scale(2)]"
+                />
               </div>
             </div>
 
@@ -231,7 +234,6 @@ export default {
     this.error = null;
 
     try {
-      // 1) Pega versões e detalhes
       const [versions, details] = await Promise.all([
         getChangelogs(baseUrl),
         getChangelogsWithFilters(baseUrl)
@@ -239,7 +241,6 @@ export default {
       this.versions = versions;
       this.details  = details;
 
-      // 2) Busca anexos em paralelo por versão
       const anexosPorVersao = await Promise.all(
         this.versions.map(v =>
           consultarAnexos(baseUrl, v.numFluig)
@@ -247,7 +248,7 @@ export default {
         )
       );
 
-      // 3) Monta o mapa numFluig → [ downloadUrl ]
+
       this.anexosMap = new Map();
       anexosPorVersao.forEach(({ numFluig, anexos }) => {
         this.anexosMap.set(
