@@ -48,7 +48,7 @@
           </button> -->
         </div>
 
-        <!-- Modal -->
+      <!-- Modal -->
         <div v-if="modalAberto" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
             <button @click="fecharModal" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700">
@@ -57,22 +57,31 @@
               </svg>
             </button>
             <h1 class="text-2xl font-bold text-slate-800 mb-4">Sugerir Melhoria</h1>
-            <label for="email" class="block text-slate-700 font-medium mb-2">Email do Solicitante</label>
-            <input v-model="email" type="email" placeholder="Preencha seu email" class="w-full p-2 border border-slate-300 rounded-md mb-4">
-            <label for="nome" class="block text-slate-700 font-medium mb-2">Nome do Solicitante</label>
-            <input v-model="nome" type="text" placeholder="Preencha seu nome" class="w-full p-2 border border-slate-300 rounded-md mb-4">
-            <label for="titulo" class="block text-slate-700 font-medium mb-2">Título da Sugestão</label>
-            <input v-model="titulo" type="text" placeholder="Preencha o título da sugestão" class="w-full p-2 border border-slate-300 rounded-md mb-4">
-            <label for="sugestao" class="block text-slate-700 font-medium mb-2">Descrição da Sugestão</label>
-            <textarea v-model="sugestao" placeholder="Preencha o que você deseja sugerir" class="w-full p-2 border border-slate-300 rounded-md mb-4"></textarea>
-            <div class="flex justify-end">
-              <button class="bg-slate-800 text-white px-4 py-2 rounded-md hover:bg-slate-900 transition-all duration-300">
-                Enviar
-              </button>
-              <button @click="fecharModal" class="ml-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-all duration-300">
-                Cancelar
-              </button>
-            </div>
+            <form @submit.prevent="enviar">
+              <label for="email" class="block text-slate-700 font-medium mb-2">Email do Solicitante</label>
+              <input v-model="emailSolicitante" type="email" placeholder="Preencha seu email" class="w-full p-2 border border-slate-300 rounded-md mb-4">
+
+              <label for="nome" class="block text-slate-700 font-medium mb-2">Nome do Solicitante</label>
+              <input v-model="nomeSolicitante" type="text" placeholder="Preencha seu nome" class="w-full p-2 border border-slate-300 rounded-md mb-4">
+
+              <label for="titulo" class="block text-slate-700 font-medium mb-2">Título da Sugestão</label>
+              <input v-model="tituloMelhoria" type="text" placeholder="Preencha o título da sugestão" class="w-full p-2 border border-slate-300 rounded-md mb-4">
+
+              <label for="sugestao" class="block text-slate-700 font-medium mb-2">Descrição da Sugestão</label>
+              <textarea v-model="descricaoMelhoria" placeholder="Preencha o que você deseja sugerir" class="w-full p-2 border border-slate-300 rounded-md mb-4"></textarea>
+
+              <div class="flex justify-end">
+                <button :disabled="loading" class="bg-slate-800 text-white px-4 py-2 rounded-md hover:bg-slate-900 transition-all duration-300">
+                  Enviar
+                </button>
+                <button type="button" @click="fecharModal" class="ml-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-all duration-300">
+                  Cancelar
+                </button>
+              </div>
+
+              <p v-if="erro" class="mt-4 text-red-500">{{ erro }}</p>
+              <p v-else-if="sucesso" class="mt-4 text-green-600">Sugestão enviada com sucesso!</p>
+            </form>
           </div>
         </div>
 
@@ -149,12 +158,18 @@
 </template>
 
 <script>
-import { getChangelogs, getChangelogsWithFilters, consultarAnexos } from '../services/fluigService.js';
+import { getChangelogs, getChangelogsWithFilters, consultarAnexos, useSugestaoService } from '../services/fluigService.js';
 
 const baseUrl = "https://fluighml.rn.sebrae.com.br";
 
 export default {
   name: 'ChangelogWidget',
+
+  setup() {
+    const { enviarSugestao, loading, error } = useSugestaoService();
+    return { enviarSugestao, loadingSugestao: loading, errorSugestao: error };
+  },
+
   data() {
     return {
       versions: [],
@@ -165,6 +180,12 @@ export default {
       modalAberto: false,
       versaoSelecionada: '',
       detalhesOcultos: [],
+      nomeSolicitante: '',
+      emailSolicitante: '',
+      tituloMelhoria: '',
+      descricaoMelhoria: '',
+      mensagemEnvio: '',
+      carregandoEnvio: false,
     };
   },
 
@@ -224,6 +245,29 @@ export default {
       if (i === -1) this.detalhesOcultos.push(numeroVersao);
       else this.detalhesOcultos.splice(i, 1);
     },
+    async enviar() {
+      const formFields = {
+        emailSolicitante: this.emailSolicitante,
+        nomeSolicitante: this.nomeSolicitante,
+        tituloMelhoria: this.tituloMelhoria,
+        descricaoMelhoria: this.descricaoMelhoria,
+      };
+
+      try {
+        await this.enviarSugestao(
+          baseUrl,
+          'PreencherChangelogeSugerirMelhoria', // numProcesso
+          formFields,
+          5,  // targetState desejado
+          '' // assignee
+        );
+        alert('Sugestão enviada com sucesso!');
+        this.fecharModal();
+        this.email = this.nome = this.titulo = this.sugestao = '';
+      } catch (e) {
+        alert('Erro ao enviar sugestão: ' + e.message);
+      }
+    }
   },
 
   async mounted() {
